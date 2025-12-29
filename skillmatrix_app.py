@@ -70,7 +70,7 @@ st.markdown("""
     /* 3. Gaya Header Tabel agar Navy Smooth */
     thead tr th {
         background-color: #1E293B !important;
-        color: #000000 !important;
+        color: white !important;
         font-weight: bold !important;
     }
 
@@ -177,6 +177,7 @@ try:
         st.error("Data tidak ditemukan.")
 except Exception as e:
     st.error(f"Error: {e}")
+
 
 
 
