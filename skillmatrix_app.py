@@ -13,87 +13,55 @@ def get_base64_logo(url):
     try:
         file_id = url.split('/')[-2]
         direct_url = f'https://drive.google.com/uc?export=download&id={file_id}'
-        response = requests.get(direct_url, timeout=10)
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(direct_url, headers=headers, timeout=10)
         if response.status_code == 200:
             return base64.b64encode(response.content).decode()
         return None
     except Exception:
         return None
 
-# --- CSS CUSTOM: NAVY SMOOTH THEME ---
+# --- CSS CUSTOM ---
 st.markdown("""
     <style>
-    /* Mengatur Background Halaman Utama */
-    .stApp {
-        background-color: #1E293B;
-    }
-
-    /* 1. Header Utama Navy Smooth */
+    .stApp { background-color: #ffffff; }
     .custom-header {
-        background-color: #1E293B; 
-        padding: 20px 45px;
-        border-radius: 15px;
+        background-color: #cbd5e1; 
+        padding: 15px 30px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 25px;
-        border: 1px solid #334155;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
-
-    .title-text {
-        color: #FFFFFF !important;
-        font-size: 38px;
-        font-weight: 800;
-        margin: 0;
-    }
-
-    .logo-img {
-        height: 75px;
-        width: auto;
-    }
-
-    /* 2. Background Header Filter (Expander) - Navy Smooth */
-    .streamlit-expanderHeader {
-        background-color: #1E293B !important;
-        color: white !important;
-        border-radius: 10px !important;
-    }
-    
-    .streamlit-expanderContent {
-        background-color: #000000 !important;
-        border: 1px solid #E2E8F0 !important;
-        border-bottom-left-radius: 10px !important;
-        border-bottom-right-radius: 10px !important;
-    }
-
-    /* 3. Gaya Header Tabel agar Navy Smooth */
-    thead tr th {
-        background-color: #1E293B !important;
-        color: white !important;
-        font-weight: bold !important;
-    }
-
-    /* Kartu Metrik dengan Border Navy Tipis */
-    div[data-testid="stMetric"] {
-        background-color: #000000;
-        border-radius: 15px;
-        border-left: 5px solid #1E293B; /* Aksen Navy */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    }
-    
-    [data-testid="stMetricValue"] {
-        color: #1E293B !important;
+    .title-text { color: #000000 !important; font-size: 26px; font-weight: 700; margin: 0; }
+    .section-title {
+        background-color: #e2e8f0; 
+        color: #000000;
+        padding: 8px 20px;
+        border-radius: 8px;
         font-weight: 700;
+        margin-bottom: 15px;
+        width: 100%;
+        display: block;
+        border: 1px solid #cbd5e1;
     }
-
-    .block-container {
-        padding-top: 2rem !important;
+    div[data-testid="stMetric"] {
+        background-color: #f8fafc !important;
+        border: 2px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 10px !important;
     }
+    div[data-testid="stDataFrame"] th {
+        color: #000000 !important;
+        background-color: #f1f5f9 !important;
+        font-weight: 900 !important;
+    }
+    div[data-testid="stDataFrame"] td { color: #000000 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- FUNGSI LOAD DATA ---
+# --- LOAD DATA ---
 @st.cache_data
 def load_data():
     try:
@@ -101,83 +69,112 @@ def load_data():
         df_raw = pd.read_csv(SHEET_URL)
         df_raw.columns = df_raw.iloc[1] 
         df_clean = df_raw.iloc[2:].reset_index(drop=True)
-        SELECTED_COLUMNS = ['Building', 'SPV', 'Line', 'Name Opt', 'ID NO', 'Style', 'Process Part', 'Name Process (Bahasa)', 'Grade Process', 'Grade Countif', 'Grade Quality', 'Final Grade']
+        SELECTED_COLUMNS = ['SPV', 'Line', 'Name Opt', 'ID NO', 'Style', 'Process Part', 'Name Process (Bahasa)', 'Grade Process', 'Grade Countif', 'Grade Quality', 'Final Grade']
         df_final = df_clean[[c for c in SELECTED_COLUMNS if c in df_clean.columns]].copy()
         df_final = df_final.dropna(subset=['Name Process (Bahasa)'], how='all').reset_index(drop=True)
         return df_final
-    except:
+    except Exception:
         return pd.DataFrame()
 
-# --- HEADER DASHBOARD ---
-logo_data = get_base64_logo("https://drive.google.com/file/d/1zfkajHrUyDQ-q4ecPd7iVcK1bCEC3zmT/view?usp=sharing")
+# --- HEADER ---
+logo_url = "https://drive.google.com/file/d/1oS09AXFGtqWtB7b_llMa4uWFjoK8qwzG/view?usp=sharing"
+logo_data = get_base64_logo(logo_url)
+st.markdown(f'<div class="custom-header"><h1 class="title-text">Skill Matrix Dashboard</h1>{"<img src=\'data:image/png;base64," + logo_data + "\' style=\'height:45px;\'>" if logo_data else ""}</div>', unsafe_allow_html=True)
 
-st.markdown(f"""
-    <div class="custom-header">
-        <h1 class="title-text">Skill Matrix Dashboard</h1>
-        {"<img src='data:image/png;base64," + logo_data + "' class='logo-img'>" if logo_data else ""}
-    </div>
-""", unsafe_allow_html=True)
-
-# --- LOGIKA DASHBOARD ---
 try:
     df_display = load_data()
     if not df_display.empty:
-        # Filter Section
         with st.expander("🔍 Filter Pencarian Cepat", expanded=True):
             f1, f2, f3, f4 = st.columns(4)
             with f1: s_name = st.text_input("Nama:")
             with f2: s_id = st.text_input("ID NO:")
             with f3:
-                lines = df_display['Line'].ffill().unique()
-                sel_line = st.selectbox("Line:", ["Semua"] + sorted([str(l) for l in lines if pd.notna(l)]))
+                # Pastikan dropdown Line urut angka
+                df_display['Line'] = pd.to_numeric(df_display['Line'].ffill(), errors='coerce')
+                lines_list = sorted(df_display['Line'].dropna().unique().astype(int))
+                sel_line = st.selectbox("Line:", ["Semua"] + [str(l) for l in lines_list])
             with f4:
                 spvs = df_display['SPV'].ffill().unique()
                 sel_spv = st.selectbox("SPV:", ["Semua"] + sorted([str(s) for s in spvs if pd.notna(s)]))
 
-        # Filter Logic
+        # --- LOGIK FILTER ---
         df_logic = df_display.copy()
-        cols_fill = ['Building', 'SPV', 'Line', 'Name Opt', 'ID NO', 'Final Grade']
-        df_logic[cols_fill] = df_logic[cols_fill].ffill()
+        df_logic[['SPV', 'Line', 'Name Opt', 'ID NO', 'Final Grade']] = df_logic[['SPV', 'Line', 'Name Opt', 'ID NO', 'Final Grade']].ffill()
         mask = pd.Series([True] * len(df_logic))
         if s_name: mask &= df_logic['Name Opt'].str.contains(s_name, case=False, na=False)
         if s_id: mask &= df_logic['ID NO'].astype(str).str.contains(s_id, case=False, na=False)
-        if sel_line != "Semua": mask &= df_logic['Line'].astype(str) == sel_line
+        if sel_line != "Semua": mask &= df_logic['Line'].astype(str) == str(sel_line)
         if sel_spv != "Semua": mask &= df_logic['SPV'] == sel_spv
         df_filt_calc = df_logic[mask.values]
 
-        # Visuals
         df_unique = df_filt_calc.drop_duplicates(subset=['ID NO'])
-        total = len(df_unique)
-        
-        if total > 0:
-            st.markdown("### 📊 Analisis Performa Grade")
-            col_chart, col_metric = st.columns([1.5, 1])
-            with col_chart:
+        color_map = {'A':'#10b981','B':'#3b82f6','C':'#f59e0b','D':'#ef4444'}
+
+        if not df_unique.empty:
+            st.markdown('<div class="section-title">📊 Analisis Performa</div>', unsafe_allow_html=True)
+            
+            # --- ROW 1: PIE & METRICS ---
+            col_left, col_right = st.columns([1.5, 1])
+            with col_left:
                 counts = df_unique['Final Grade'].value_counts().reset_index()
                 counts.columns = ['Grade', 'Jumlah']
-                grade_colors = {'A':'#10B981','B':'#3B82F6','C':'#F59E0B','D':'#EF4444'}
-                fig = px.pie(counts, values='Jumlah', names='Grade', hole=0.5)
-                fig.update_traces(marker=dict(colors=[grade_colors.get(x, '#636EFA') for x in counts['Grade']]), textinfo='label+percent+value')
-                fig.update_layout(showlegend=False, height=400, margin=dict(t=10, b=10, l=0, r=0))
-                st.plotly_chart(fig, use_container_width=True)
-            with col_metric:
-                st.metric("Total Operator", f"{total} Org")
-                m1, m2 = st.columns(2)
+                fig_pie = px.pie(counts, values='Jumlah', names='Grade', hole=0.5, color='Grade', color_discrete_map=color_map)
+                fig_pie.update_traces(textinfo='label+percent+value', textposition='inside')
+                fig_pie.update_layout(showlegend=False, height=350, margin=dict(t=0, b=0, l=0, r=0))
+                st.plotly_chart(fig_pie, use_container_width=True)
+                
+            with col_right:
+                st.metric("Total Operator", f"{len(df_unique)} Orang")
+                st.write("---")
+                m_col1, m_col2 = st.columns(2)
                 for i, g in enumerate(['A', 'B', 'C', 'D']):
                     count = df_unique[df_unique['Final Grade'] == g].shape[0]
-                    target = m1 if i % 2 == 0 else m2
-                    target.metric(f"Grade {g}", f"{count} Org")
+                    target_col = m_col1 if i % 2 == 0 else m_col2
+                    target_col.metric(f"Grade {g}", f"{count} Org")
 
-        st.divider()
-        st.markdown("### 📑 Detail Data Operator")
-        # Menampilkan tabel
-        st.dataframe(df_display[mask.values].fillna(""), use_container_width=True, hide_index=True)
+            # --- ROW 2: BAR CHART (SORTED BY LINE) ---
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # Hitung Data
+            line_data = df_unique.groupby(['Line', 'Final Grade']).size().reset_index(name='Count')
+            line_total = df_unique.groupby('Line').size().reset_index(name='Total')
+            line_data = line_data.merge(line_total, on='Line')
+            line_data['Percent'] = (line_data['Count'] / line_data['Total'] * 100).round(1)
+            
+            # Sorting Line Berdasarkan Angka
+            line_data = line_data.sort_values('Line')
+            line_data['Line_Label'] = "Line " + line_data['Line'].astype(int).astype(str)
+            line_data['Label'] = line_data['Final Grade'] + ": " + line_data['Percent'].astype(str) + "%"
+
+            fig_bar = px.bar(line_data, x='Line_Label', y='Count', color='Final Grade', 
+                             color_discrete_map=color_map, title="Sebaran Grade Berdasarkan Line",
+                             barmode='stack', text='Label',
+                             category_orders={"Line_Label": ["Line " + str(i) for i in lines_list]})
+            
+            fig_bar.update_traces(textposition='inside', textfont_color='white')
+            fig_bar.update_layout(
+                showlegend=False,
+                height=450, 
+                xaxis_title="", yaxis_title="",
+                margin=dict(l=0, r=0, t=40, b=40)
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+        # --- ROW 3: DETAIL DATA ---
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(f'<div class="section-title">📑 Detail Data ({len(df_filt_calc)} Baris)</div>', unsafe_allow_html=True)
+        
+        def color_grade(val):
+            if val == 'A': return 'background-color: #dcfce7; color: #000000;'
+            if val == 'B': return 'background-color: #dbeafe; color: #000000;'
+            if val == 'C': return 'background-color: #ffedd5; color: #000000;'
+            if val == 'D': return 'background-color: #fee2e2; color: #000000;'
+            return ''
+
+        styled_df = df_display[mask.values].fillna("").style.applymap(color_grade, subset=['Final Grade'])
+        st.dataframe(styled_df, use_container_width=True, hide_index=True)
         
     else:
-        st.error("Data tidak ditemukan.")
+        st.info("Pilih filter untuk melihat data.")
 except Exception as e:
-    st.error(f"Error: {e}")
-
-
-
-
+    st.error(f"Kesalahan: {e}")
