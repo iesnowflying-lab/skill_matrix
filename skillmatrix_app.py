@@ -61,7 +61,7 @@ st.markdown("""
     }
     
     .streamlit-expanderContent {
-        background-color: #FFFFFF !important;
+        background-color: #000000 !important;
         border: 1px solid #E2E8F0 !important;
         border-bottom-left-radius: 10px !important;
         border-bottom-right-radius: 10px !important;
@@ -76,7 +76,7 @@ st.markdown("""
 
     /* Kartu Metrik dengan Border Navy Tipis */
     div[data-testid="stMetric"] {
-        background-color: #FFFFFF;
+        background-color: #000000;
         border-radius: 15px;
         border-left: 5px solid #1E293B; /* Aksen Navy */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
@@ -177,4 +177,5 @@ try:
         st.error("Data tidak ditemukan.")
 except Exception as e:
     st.error(f"Error: {e}")
+
 
