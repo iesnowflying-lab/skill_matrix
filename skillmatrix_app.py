@@ -25,7 +25,7 @@ st.markdown("""
     <style>
     /* Mengatur warna judul agar selalu terlihat (Biru Gelap/Navy) */
     .title-text {
-        color: #1E3A8A !important; /* Warna Navy yang tetap kontras di putih/hitam */
+        color: #000000 !important; /* Warna Navy yang tetap kontras di putih/hitam */
         font-size: 48px;
         font-weight: 800;
         margin: 0;
@@ -158,3 +158,4 @@ try:
         st.error("Gagal memuat data.")
 except Exception as e:
     st.error(f"Error: {e}")
+
