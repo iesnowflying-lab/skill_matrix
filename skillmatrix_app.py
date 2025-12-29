@@ -20,61 +20,71 @@ def get_base64_logo(url):
     except Exception:
         return None
 
-# --- CSS CUSTOM: PERBAIKAN LOGO & KONTRAS TEKS ---
+# --- CSS CUSTOM: NAVY SMOOTH THEME ---
 st.markdown("""
     <style>
-    /* 1. Header Navy agar Logo Putih Kelihatan Jelas */
+    /* Mengatur Background Halaman Utama */
+    .stApp {
+        background-color: #F8FAFC;
+    }
+
+    /* 1. Header Utama Navy Smooth */
     .custom-header {
-        background-color: #1E293B; /* Biru Gelap (Navy) */
-        padding: 20px 40px;
+        background-color: #1E293B; 
+        padding: 20px 45px;
         border-radius: 15px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         border: 1px solid #334155;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .title-text {
-        color: #FFFFFF !important; /* Judul Putih di atas Navy */
-        font-size: 42px;
+        color: #FFFFFF !important;
+        font-size: 38px;
         font-weight: 800;
         margin: 0;
-        letter-spacing: -1px;
     }
 
     .logo-img {
-        height: 85px; /* Ukuran Logo diperbesar agar jelas */
+        height: 75px;
         width: auto;
     }
 
-    /* 2. Pastikan Teks Tabel & Header Kolom Terbaca (Hitam Pekat) */
-    [data-testid="stTable"], [data-testid="stDataFrame"] {
-        background-color: #FFFFFF !important;
+    /* 2. Background Header Filter (Expander) - Navy Smooth */
+    .streamlit-expanderHeader {
+        background-color: #1E293B !important;
+        color: white !important;
+        border-radius: 10px !important;
     }
     
-    /* Memaksa teks tabel menjadi hitam agar jelas di PC manapun */
-    .stDataFrame div, .stDataFrame span, .stDataFrame p {
-        color: #000000 !important;
+    .streamlit-expanderContent {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-bottom-left-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
     }
 
-    /* 3. Metrik dengan latar belakang putih agar teks hitam menonjol */
+    /* 3. Gaya Header Tabel agar Navy Smooth */
+    thead tr th {
+        background-color: #1E293B !important;
+        color: white !important;
+        font-weight: bold !important;
+    }
+
+    /* Kartu Metrik dengan Border Navy Tipis */
     div[data-testid="stMetric"] {
         background-color: #FFFFFF;
-        padding: 20px;
         border-radius: 15px;
-        border: 1px solid #E2E8F0;
+        border-left: 5px solid #1E293B; /* Aksen Navy */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     [data-testid="stMetricValue"] {
-        color: #0F172A !important; /* Angka Hitam */
+        color: #1E293B !important;
         font-weight: 700;
-    }
-
-    [data-testid="stMetricLabel"] {
-        color: #475569 !important; /* Label Abu Tua */
     }
 
     .block-container {
@@ -108,7 +118,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- PROSES DATA & VISUALISASI ---
+# --- LOGIKA DASHBOARD ---
 try:
     df_display = load_data()
     if not df_display.empty:
@@ -135,7 +145,7 @@ try:
         if sel_spv != "Semua": mask &= df_logic['SPV'] == sel_spv
         df_filt_calc = df_logic[mask.values]
 
-        # Ringkasan Visual
+        # Visuals
         df_unique = df_filt_calc.drop_duplicates(subset=['ID NO'])
         total = len(df_unique)
         
@@ -147,11 +157,8 @@ try:
                 counts.columns = ['Grade', 'Jumlah']
                 grade_colors = {'A':'#10B981','B':'#3B82F6','C':'#F59E0B','D':'#EF4444'}
                 fig = px.pie(counts, values='Jumlah', names='Grade', hole=0.5)
-                fig.update_traces(
-                    marker=dict(colors=[grade_colors.get(x, '#636EFA') for x in counts['Grade']]),
-                    textinfo='label+percent+value'
-                )
-                fig.update_layout(showlegend=False, height=400, margin=dict(t=0, b=0, l=0, r=0))
+                fig.update_traces(marker=dict(colors=[grade_colors.get(x, '#636EFA') for x in counts['Grade']]), textinfo='label+percent+value')
+                fig.update_layout(showlegend=False, height=400, margin=dict(t=10, b=10, l=0, r=0))
                 st.plotly_chart(fig, use_container_width=True)
             with col_metric:
                 st.metric("Total Operator", f"{total} Org")
@@ -163,9 +170,10 @@ try:
 
         st.divider()
         st.markdown("### 📑 Detail Data Operator")
-        # Menampilkan tabel dengan gaya yang memaksa teks terlihat jelas
+        # Menampilkan tabel
         st.dataframe(df_display[mask.values].fillna(""), use_container_width=True, hide_index=True)
+        
     else:
-        st.error("Koneksi data gagal.")
+        st.error("Data tidak ditemukan.")
 except Exception as e:
     st.error(f"Error: {e}")
