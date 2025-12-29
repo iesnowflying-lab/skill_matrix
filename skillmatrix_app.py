@@ -20,22 +20,13 @@ def get_base64_logo(url):
     except Exception:
         return None
 
-# --- CSS CUSTOM (NAVY HEADER & CONTRAST CONTENT) ---
+# --- CSS CUSTOM: PERBAIKAN LOGO & KONTRAS TEKS ---
 st.markdown("""
     <style>
-    /* Mengatur Judul agar Putih dan Jelas di atas Header Navy */
-    .title-text {
-        color: #FFFFFF !important;
-        font-size: 42px;
-        font-weight: 800;
-        margin: 0;
-        letter-spacing: -1px;
-    }
-
-    /* Header Biru Gelap (Navy) khusus agar Logo Putih Snowflying Menjol */
+    /* 1. Header Navy agar Logo Putih Kelihatan Jelas */
     .custom-header {
-        background-color: #1E293B; 
-        padding: 20px 45px;
+        background-color: #1E293B; /* Biru Gelap (Navy) */
+        padding: 20px 40px;
         border-radius: 15px;
         display: flex;
         align-items: center;
@@ -45,12 +36,30 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
+    .title-text {
+        color: #FFFFFF !important; /* Judul Putih di atas Navy */
+        font-size: 42px;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -1px;
+    }
+
     .logo-img {
-        height: 85px; /* Ukuran diperbesar sedikit agar lebih gagah */
+        height: 85px; /* Ukuran Logo diperbesar agar jelas */
         width: auto;
     }
 
-    /* METRIK: Dibuat Terang agar tulisan Hitam Terbaca Jelas */
+    /* 2. Pastikan Teks Tabel & Header Kolom Terbaca (Hitam Pekat) */
+    [data-testid="stTable"], [data-testid="stDataFrame"] {
+        background-color: #FFFFFF !important;
+    }
+    
+    /* Memaksa teks tabel menjadi hitam agar jelas di PC manapun */
+    .stDataFrame div, .stDataFrame span, .stDataFrame p {
+        color: #000000 !important;
+    }
+
+    /* 3. Metrik dengan latar belakang putih agar teks hitam menonjol */
     div[data-testid="stMetric"] {
         background-color: #FFFFFF;
         padding: 20px;
@@ -60,7 +69,7 @@ st.markdown("""
     }
     
     [data-testid="stMetricValue"] {
-        color: #0F172A !important; /* Angka Hitam Pekat */
+        color: #0F172A !important; /* Angka Hitam */
         font-weight: 700;
     }
 
@@ -68,15 +77,8 @@ st.markdown("""
         color: #475569 !important; /* Label Abu Tua */
     }
 
-    /* Menyesuaikan area konten utama */
     .block-container {
         padding-top: 2rem !important;
-    }
-    
-    /* Menghaluskan tampilan Filter Expander */
-    .stExpander {
-        border-radius: 12px !important;
-        background-color: #FFFFFF !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -85,12 +87,10 @@ st.markdown("""
 @st.cache_data
 def load_data():
     try:
-        # Link export CSV dari Google Sheets Anda
         SHEET_URL = "https://docs.google.com/spreadsheets/d/1D2fWEf08Oks6XFvz5KBgHHUjxJiM38Z0/export?format=csv"
         df_raw = pd.read_csv(SHEET_URL)
         df_raw.columns = df_raw.iloc[1] 
         df_clean = df_raw.iloc[2:].reset_index(drop=True)
-        
         SELECTED_COLUMNS = ['Building', 'SPV', 'Line', 'Name Opt', 'ID NO', 'Style', 'Process Part', 'Name Process (Bahasa)', 'Grade Process', 'Grade Countif', 'Grade Quality', 'Final Grade']
         df_final = df_clean[[c for c in SELECTED_COLUMNS if c in df_clean.columns]].copy()
         df_final = df_final.dropna(subset=['Name Process (Bahasa)'], how='all').reset_index(drop=True)
@@ -98,7 +98,7 @@ def load_data():
     except:
         return pd.DataFrame()
 
-# --- HEADER DASHBOARD (DENGAN LOGO BARU ANDA) ---
+# --- HEADER DASHBOARD ---
 logo_data = get_base64_logo("https://drive.google.com/file/d/1zfkajHrUyDQ-q4ecPd7iVcK1bCEC3zmT/view?usp=sharing")
 
 st.markdown(f"""
@@ -108,11 +108,11 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- LOGIKA DASHBOARD ---
+# --- PROSES DATA & VISUALISASI ---
 try:
     df_display = load_data()
     if not df_display.empty:
-        # Bagian Filter
+        # Filter Section
         with st.expander("🔍 Filter Pencarian Cepat", expanded=True):
             f1, f2, f3, f4 = st.columns(4)
             with f1: s_name = st.text_input("Nama:")
@@ -124,17 +124,15 @@ try:
                 spvs = df_display['SPV'].ffill().unique()
                 sel_spv = st.selectbox("SPV:", ["Semua"] + sorted([str(s) for s in spvs if pd.notna(s)]))
 
-        # Filter Logic (Filldown agar data line/spv tidak kosong)
+        # Filter Logic
         df_logic = df_display.copy()
         cols_fill = ['Building', 'SPV', 'Line', 'Name Opt', 'ID NO', 'Final Grade']
         df_logic[cols_fill] = df_logic[cols_fill].ffill()
-        
         mask = pd.Series([True] * len(df_logic))
         if s_name: mask &= df_logic['Name Opt'].str.contains(s_name, case=False, na=False)
         if s_id: mask &= df_logic['ID NO'].astype(str).str.contains(s_id, case=False, na=False)
         if sel_line != "Semua": mask &= df_logic['Line'].astype(str) == sel_line
         if sel_spv != "Semua": mask &= df_logic['SPV'] == sel_spv
-        
         df_filt_calc = df_logic[mask.values]
 
         # Ringkasan Visual
@@ -144,38 +142,30 @@ try:
         if total > 0:
             st.markdown("### 📊 Analisis Performa Grade")
             col_chart, col_metric = st.columns([1.5, 1])
-            
             with col_chart:
                 counts = df_unique['Final Grade'].value_counts().reset_index()
                 counts.columns = ['Grade', 'Jumlah']
-                
-                # Warna Grade yang konsisten
                 grade_colors = {'A':'#10B981','B':'#3B82F6','C':'#F59E0B','D':'#EF4444'}
-                
                 fig = px.pie(counts, values='Jumlah', names='Grade', hole=0.5)
                 fig.update_traces(
                     marker=dict(colors=[grade_colors.get(x, '#636EFA') for x in counts['Grade']]),
-                    textinfo='label+percent',
-                    textfont_size=14
+                    textinfo='label+percent+value'
                 )
-                fig.update_layout(showlegend=True, height=400, margin=dict(t=0, b=0, l=0, r=0))
+                fig.update_layout(showlegend=False, height=400, margin=dict(t=0, b=0, l=0, r=0))
                 st.plotly_chart(fig, use_container_width=True)
-                
             with col_metric:
                 st.metric("Total Operator", f"{total} Org")
-                st.write("---")
                 m1, m2 = st.columns(2)
                 for i, g in enumerate(['A', 'B', 'C', 'D']):
                     count = df_unique[df_unique['Final Grade'] == g].shape[0]
                     target = m1 if i % 2 == 0 else m2
                     target.metric(f"Grade {g}", f"{count} Org")
 
-        # Tabel Detail
         st.divider()
         st.markdown("### 📑 Detail Data Operator")
+        # Menampilkan tabel dengan gaya yang memaksa teks terlihat jelas
         st.dataframe(df_display[mask.values].fillna(""), use_container_width=True, hide_index=True)
-        
     else:
-        st.error("Koneksi ke Google Sheets gagal atau data kosong.")
+        st.error("Koneksi data gagal.")
 except Exception as e:
-    st.error(f"Terjadi kesalahan: {e}")
+    st.error(f"Error: {e}")
