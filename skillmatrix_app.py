@@ -25,7 +25,7 @@ st.markdown("""
     <style>
     /* Mengatur Background Halaman Utama */
     .stApp {
-        background-color: #F8FAFC;
+        background-color: #1E293B;
     }
 
     /* 1. Header Utama Navy Smooth */
@@ -177,3 +177,4 @@ try:
         st.error("Data tidak ditemukan.")
 except Exception as e:
     st.error(f"Error: {e}")
+
