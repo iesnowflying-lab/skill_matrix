@@ -91,7 +91,7 @@ def load_data():
         return pd.DataFrame()
 
 # --- HEADER DASHBOARD ---
-logo_data = get_base64_logo("https://drive.google.com/file/d/1zfkajHrUyDQ-q4ecPd7iVcK1bCEC3zmT/view?usp=sharing")
+logo_data = get_base64_logo("https://drive.google.com/file/d/1oS09AXFGtqWtB7b_llMa4uWFjoK8qwzG/view?usp=sharing")
 
 st.markdown(f"""
     <div class="custom-header">
@@ -158,4 +158,5 @@ try:
         st.error("Gagal memuat data.")
 except Exception as e:
     st.error(f"Error: {e}")
+
 
