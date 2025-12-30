@@ -28,39 +28,47 @@ def get_base64_logo(url):
     except Exception:
         return None
 
-# --- CSS CUSTOM (SIMETRIS & OPTIMASI) ---
+# --- CSS CUSTOM (PRESISI & SEIMBANG) ---
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* Header Simetris */
+    /* Header dengan Penyeimbang Presisi */
     .custom-header {
         background-color: #cbd5e1; 
-        padding: 10px 40px;
+        padding: 0px 40px; /* Padding atas-bawah 0 agar dikontrol oleh height */
         border-radius: 15px;
         display: flex;
-        align-items: center; /* Menjaga teks dan logo sejajar vertikal di tengah */
+        flex-direction: row;
+        align-items: center; /* Kunci utama keseimbangan vertikal */
         justify-content: space-between;
         margin-bottom: 25px;
         border: 1px solid #94a3b8;
-        min-height: 120px; /* Mengunci tinggi agar proporsional */
+        height: 140px; /* Tinggi tetap agar simetris */
     }
     
     .title-text { 
         color: #000000 !important; 
-        font-size: 32px; 
+        font-size: 35px; 
         font-weight: 800; 
         margin: 0;
-        padding-left: 10px; /* Memberi sedikit nafas di sisi kiri */
+        line-height: 1; /* Menghilangkan spasi kosong bawaan teks */
+        display: flex;
+        align-items: center;
     }
     
-    /* Logo Diperbesar */
     .header-logo { 
-        height: 100px; 
+        height: 90px; /* Sedikit dikecilkan agar proporsional dengan teks */
         width: auto; 
-        object-fit: contain; 
+        object-fit: contain;
+        display: block;
     }
     
+    /* Menghilangkan margin bawaan Streamlit pada elemen judul */
+    .stMarkdown div {
+        line-height: 0;
+    }
+
     .section-title {
         background-color: #e2e8f0; 
         color: #000000;
@@ -70,18 +78,16 @@ st.markdown("""
         margin-bottom: 15px;
         border-left: 5px solid #3b82f6;
     }
-    
-    div[data-testid="stMetric"] {
-        background-color: #f8fafc !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 12px !important;
-        padding: 15px !important;
-    }
-    
-    /* Tabel Rata Kiri */
-    [data-testid="stDataFrame"] td { text-align: left !important; }
     </style>
     """, unsafe_allow_html=True)
+
+# --- INJECT HEADER ---
+st.markdown(f'''
+    <div class="custom-header">
+        <div class="title-text">Skill Matrix Dashboard</div>
+        <img src="data:image/png;base64,{logo_data}" class="header-logo">
+    </div>
+    ''', unsafe_allow_html=True)
 
 # --- LOAD DATA ---
 @st.cache_data
@@ -217,3 +223,4 @@ try:
         
 except Exception as e:
     st.error(f"Terjadi Kesalahan: {e}")
+
