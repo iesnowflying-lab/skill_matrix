@@ -159,13 +159,14 @@ try:
             
             fig_bar.update_traces(textposition='inside', textfont=dict(color="white", size=11))
             
-            # Update Layout: Hapus judul sumbu, angka sumbu, dan legend
+            # PEMBERSIHAN TOTAL SUMBU X DAN Y
             fig_bar.update_layout(
                 showlegend=False,
                 height=500, 
-                xaxis=dict(title="", showticklabels=True), # Tetap munculkan label "Line X" di bawah
-                yaxis=dict(title="", showticklabels=False, showgrid=False), # Sembunyikan angka sumbu Y
-                margin=dict(t=20, b=20)
+                # Menghapus judul sumbu secara eksplisit dan angka sumbu Y
+                xaxis=dict(title=None, showticklabels=True), 
+                yaxis=dict(title=None, showticklabels=False, showgrid=False, zeroline=False), 
+                margin=dict(t=10, b=10, l=10, r=10)
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
