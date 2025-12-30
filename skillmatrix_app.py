@@ -120,7 +120,6 @@ try:
                 counts = df_unique['Final Grade'].value_counts().reset_index()
                 counts.columns = ['Grade', 'Jumlah']
                 total_op = counts['Jumlah'].sum()
-                # Membuat Custom Label: Grade X / Value / Percent%
                 counts['Custom_Label'] = counts.apply(lambda x: f"Grade {x['Grade']} / {x['Jumlah']} / {(x['Jumlah']/total_op*100):.1f}%", axis=1)
                 
                 fig_pie = px.pie(counts, values='Jumlah', names='Grade', hole=0.5, 
@@ -143,7 +142,7 @@ try:
                     target_col = m_col1 if i % 2 == 0 else m_col2
                     target_col.metric(f"Grade {g}", f"{count} Org")
 
-            # --- ROW 2: BAR CHART (CLEAN) ---
+            # --- ROW 2: BAR CHART (MINIMALIST) ---
             st.markdown("<br>", unsafe_allow_html=True)
             line_data = df_unique.groupby(['Line', 'Final Grade']).size().reset_index(name='Count')
             line_total = df_unique.groupby('Line').size().reset_index(name='Total')
@@ -151,7 +150,6 @@ try:
             line_data['Percent'] = (line_data['Count'] / line_data['Total'] * 100).round(1)
             line_data = line_data.sort_values('Line')
             line_data['Line_Label'] = "Line " + line_data['Line'].astype(int).astype(str)
-            # Label untuk di dalam bar: Grade & Percent
             line_data['Bar_Label'] = line_data.apply(lambda x: f"{x['Final Grade']}: {x['Percent']}%", axis=1)
 
             fig_bar = px.bar(line_data, x='Line_Label', y='Count', color='Final Grade', 
@@ -160,12 +158,14 @@ try:
                             category_orders={"Line_Label": ["Line " + str(i) for i in lines_list]})
             
             fig_bar.update_traces(textposition='inside', textfont=dict(color="white", size=11))
+            
+            # Update Layout: Hapus judul sumbu, angka sumbu, dan legend
             fig_bar.update_layout(
-                showlegend=False, # Hapus Legend
+                showlegend=False,
                 height=500, 
-                xaxis_title="Area Line", 
-                yaxis_title="Jumlah Operator",
-                margin=dict(t=20)
+                xaxis=dict(title="", showticklabels=True), # Tetap munculkan label "Line X" di bawah
+                yaxis=dict(title="", showticklabels=False, showgrid=False), # Sembunyikan angka sumbu Y
+                margin=dict(t=20, b=20)
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
