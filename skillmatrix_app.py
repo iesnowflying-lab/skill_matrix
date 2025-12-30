@@ -56,7 +56,7 @@ st.markdown("""
 
     /* Ukuran Logo Diperbesar */
     .header-logo {
-        height: 150px; /* Ukuran sebelumnya 45px, sekarang 80px */
+        height: 100px; /* Ukuran sebelumnya 45px, sekarang 80px */
         width: auto;
         object-fit: contain;
     }
@@ -203,4 +203,5 @@ try:
         
 except Exception as e:
     st.error(f"Terjadi Kesalahan: {e}")
+
 
