@@ -28,7 +28,7 @@ def get_base64_logo(url):
     except Exception:
         return None
 
-# --- CSS CUSTOM ---
+# --- CSS CUSTOM (LOGO & TABEL) ---
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
@@ -43,7 +43,10 @@ st.markdown("""
         border: 1px solid #94a3b8;
     }
     .title-text { color: #000000 !important; font-size: 32px; font-weight: 800; margin: 0; }
+    
+    /* Logo Diperbesar */
     .header-logo { height: 100px; width: auto; object-fit: contain; }
+    
     .section-title {
         background-color: #e2e8f0; 
         color: #000000;
@@ -59,6 +62,7 @@ st.markdown("""
         border-radius: 12px !important;
         padding: 15px !important;
     }
+    /* Tabel Rata Kiri */
     [data-testid="stDataFrame"] td { text-align: left !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -78,7 +82,7 @@ def load_data():
     except Exception:
         return pd.DataFrame()
 
-# --- HEADER ---
+# --- HEADER & LOGO ---
 logo_url = "https://drive.google.com/file/d/1oS09AXFGtqWtB7b_llMa4uWFjoK8qwzG/view?usp=sharing"
 logo_data = get_base64_logo(logo_url)
 logo_html = f'<img src="data:image/png;base64,{logo_data}" class="header-logo">' if logo_data else ""
@@ -87,6 +91,7 @@ st.markdown(f'<div class="custom-header"><h1 class="title-text">Skill Matrix Das
 try:
     df_display = load_data()
     if not df_display.empty:
+        # --- FILTER ---
         with st.expander("🔍 Filter Pencarian Cepat", expanded=True):
             f1, f2, f3, f4 = st.columns(4)
             with f1: s_name = st.text_input("Nama:")
@@ -99,6 +104,7 @@ try:
                 spvs = df_display['SPV'].ffill().unique()
                 sel_spv = st.selectbox("SPV:", ["Semua"] + sorted([str(s) for s in spvs if pd.notna(s)]))
 
+        # --- LOGIC FILTER ---
         df_logic = df_display.copy()
         df_logic[['SPV', 'Line', 'Name Opt', 'ID NO', 'Final Grade']] = df_logic[['SPV', 'Line', 'Name Opt', 'ID NO', 'Final Grade']].ffill()
         mask = pd.Series([True] * len(df_logic))
@@ -119,8 +125,9 @@ try:
             with col_left:
                 counts = df_unique['Final Grade'].value_counts().reset_index()
                 counts.columns = ['Grade', 'Jumlah']
-                total_op = counts['Jumlah'].sum()
-                counts['Custom_Label'] = counts.apply(lambda x: f"Grade {x['Grade']} / {x['Jumlah']} / {(x['Jumlah']/total_op*100):.1f}%", axis=1)
+                total_op_pie = counts['Jumlah'].sum()
+                # Label Gabungan: Grade / Jumlah / %
+                counts['Custom_Label'] = counts.apply(lambda x: f"Grade {x['Grade']} / {x['Jumlah']} / {(x['Jumlah']/total_op_pie*100):.1f}%", axis=1)
                 
                 fig_pie = px.pie(counts, values='Jumlah', names='Grade', hole=0.5, 
                                 color='Grade', color_discrete_map=color_map)
@@ -142,7 +149,7 @@ try:
                     target_col = m_col1 if i % 2 == 0 else m_col2
                     target_col.metric(f"Grade {g}", f"{count} Org")
 
-            # --- ROW 2: BAR CHART (MINIMALIST) ---
+            # --- ROW 2: BAR CHART (BERSIH TOTAL) ---
             st.markdown("<br>", unsafe_allow_html=True)
             line_data = df_unique.groupby(['Line', 'Final Grade']).size().reset_index(name='Count')
             line_total = df_unique.groupby('Line').size().reset_index(name='Total')
@@ -159,14 +166,15 @@ try:
             
             fig_bar.update_traces(textposition='inside', textfont=dict(color="white", size=11))
             
-            # PEMBERSIHAN TOTAL SUMBU X DAN Y
+            # Pengaturan layout untuk menghapus semua tulisan di samping dan bawah
             fig_bar.update_layout(
                 showlegend=False,
                 height=500, 
-                # Menghapus judul sumbu secara eksplisit dan angka sumbu Y
-                xaxis=dict(title=None, showticklabels=True), 
-                yaxis=dict(title=None, showticklabels=False, showgrid=False, zeroline=False), 
-                margin=dict(t=10, b=10, l=10, r=10)
+                xaxis=dict(title=None, showticklabels=True, showgrid=False), 
+                yaxis=dict(visible=False, showgrid=False), 
+                margin=dict(t=10, b=10, l=10, r=10),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)'
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
