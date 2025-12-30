@@ -28,47 +28,41 @@ def get_base64_logo(url):
     except Exception:
         return None
 
-# --- CSS CUSTOM (PRESISI & SEIMBANG) ---
+# --- PREPARASI LOGO (Dilakukan sebelum CSS & Header) ---
+logo_url = "https://drive.google.com/file/d/1oS09AXFGtqWtB7b_llMa4uWFjoK8qwzG/view?usp=sharing"
+logo_data = get_base64_logo(logo_url)
+logo_html = f'<img src="data:image/png;base64,{logo_data}" class="header-logo">' if logo_data else ""
+
+# --- CSS CUSTOM ---
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
-    
-    /* Header dengan Penyeimbang Presisi */
     .custom-header {
         background-color: #cbd5e1; 
-        padding: 0px 40px; /* Padding atas-bawah 0 agar dikontrol oleh height */
+        padding: 0px 40px;
         border-radius: 15px;
         display: flex;
         flex-direction: row;
-        align-items: center; /* Kunci utama keseimbangan vertikal */
+        align-items: center; 
         justify-content: space-between;
         margin-bottom: 25px;
         border: 1px solid #94a3b8;
-        height: 140px; /* Tinggi tetap agar simetris */
+        height: 140px; 
     }
-    
     .title-text { 
         color: #000000 !important; 
         font-size: 35px; 
         font-weight: 800; 
         margin: 0;
-        line-height: 1; /* Menghilangkan spasi kosong bawaan teks */
+        line-height: 1;
         display: flex;
         align-items: center;
     }
-    
     .header-logo { 
-        height: 90px; /* Sedikit dikecilkan agar proporsional dengan teks */
+        height: 90px; 
         width: auto; 
         object-fit: contain;
-        display: block;
     }
-    
-    /* Menghilangkan margin bawaan Streamlit pada elemen judul */
-    .stMarkdown div {
-        line-height: 0;
-    }
-
     .section-title {
         background-color: #e2e8f0; 
         color: #000000;
@@ -81,16 +75,13 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- LOGO & HEADER LOGIC ---
-logo_url = "https://drive.google.com/file/d/1oS09AXFGtqWtB7b_llMa4uWFjoK8qwzG/view?usp=sharing"
-
-# Kita panggil fungsinya dulu agar variabel logo_data terisi
-logo_data = get_base64_logo(logo_url)
-
-# Cek apakah logo berhasil diambil, jika tidak beri string kosong agar tidak error
-logo_html = f'<img src="data:image/png;base64,{logo_data}" class="header-logo">' if logo_data else ""
-
-# Tampilkan Header (Hanya satu kali saja)
+# --- TAMPILKAN HEADER ---
+st.markdown(f'''
+    <div class="custom-header">
+        <div class="title-text">Skill Matrix Dashboard</div>
+        {logo_html}
+    </div>
+    ''', unsafe_allow_html=True)
 
 # --- LOAD DATA ---
 @st.cache_data
@@ -106,17 +97,6 @@ def load_data():
         return df_final
     except Exception:
         return pd.DataFrame()
-
-# --- HEADER & LOGO ---
-logo_url = "https://drive.google.com/file/d/1oS09AXFGtqWtB7b_llMa4uWFjoK8qwzG/view?usp=sharing"
-logo_data = get_base64_logo(logo_url)
-logo_html = f'<img src="data:image/png;base64,{logo_data}" class="header-logo">' if logo_data else ""
-st.markdown(f'''
-    <div class="custom-header">
-        <h1 class="title-text">Skill Matrix Dashboard</h1>
-        {logo_html}
-    </div>
-    ''', unsafe_allow_html=True)
 
 try:
     df_display = load_data()
@@ -178,7 +158,7 @@ try:
                     target_col = m_col1 if i % 2 == 0 else m_col2
                     target_col.metric(f"Grade {g}", f"{count} Org")
 
-            # --- ROW 2: BAR CHART (BERSIH TOTAL) ---
+            # --- ROW 2: BAR CHART ---
             st.markdown("<br>", unsafe_allow_html=True)
             line_data = df_unique.groupby(['Line', 'Final Grade']).size().reset_index(name='Count')
             line_total = df_unique.groupby('Line').size().reset_index(name='Total')
@@ -194,15 +174,10 @@ try:
                             category_orders={"Line_Label": ["Line " + str(i) for i in lines_list]})
             
             fig_bar.update_traces(textposition='inside', textfont=dict(color="white", size=11))
-            
             fig_bar.update_layout(
-                showlegend=False,
-                height=500, 
-                xaxis=dict(title=None, showticklabels=True, showgrid=False), 
-                yaxis=dict(visible=False, showgrid=False), 
-                margin=dict(t=10, b=10, l=10, r=10),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)'
+                showlegend=False, height=500, 
+                xaxis=dict(title=None), yaxis=dict(visible=False),
+                plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)'
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -217,7 +192,7 @@ try:
             if val == 'D': return 'background-color: #fee2e2;'
             return ''
 
-        df_final_view = df_display[mask.values].fillna("")
+        df_final_view = df_filt_calc.fillna("")
         styled_df = df_final_view.style.applymap(color_grade, subset=['Final Grade'])
         st.dataframe(styled_df, use_container_width=True, hide_index=True)
         
@@ -226,6 +201,3 @@ try:
         
 except Exception as e:
     st.error(f"Terjadi Kesalahan: {e}")
-
-
-
