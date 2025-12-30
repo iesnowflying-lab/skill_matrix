@@ -28,23 +28,23 @@ def get_base64_logo(url):
     except Exception:
         return None
 
-# --- CSS CUSTOM (PRESISI & SEIMBANG) ---
+# --- CSS CUSTOM (PRESISI & DASHBOARD MODERN) ---
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* Header dengan Penyeimbang Presisi */
+    /* Header Style */
     .custom-header {
         background-color: #cbd5e1; 
-        padding: 0px 40px; /* Padding atas-bawah 0 agar dikontrol oleh height */
+        padding: 0px 40px;
         border-radius: 15px;
         display: flex;
         flex-direction: row;
-        align-items: center; /* Kunci utama keseimbangan vertikal */
+        align-items: center; 
         justify-content: space-between;
         margin-bottom: 25px;
         border: 1px solid #94a3b8;
-        height: 140px; /* Tinggi tetap agar simetris */
+        height: 140px;
     }
     
     .title-text { 
@@ -52,21 +52,15 @@ st.markdown("""
         font-size: 35px; 
         font-weight: 800; 
         margin: 0;
-        line-height: 1; /* Menghilangkan spasi kosong bawaan teks */
+        line-height: 1;
         display: flex;
         align-items: center;
     }
     
     .header-logo { 
-        height: 90px; /* Sedikit dikecilkan agar proporsional dengan teks */
+        height: 90px;
         width: auto; 
         object-fit: contain;
-        display: block;
-    }
-    
-    /* Menghilangkan margin bawaan Streamlit pada elemen judul */
-    .stMarkdown div {
-        line-height: 0;
     }
 
     .section-title {
@@ -75,9 +69,23 @@ st.markdown("""
         padding: 10px 20px;
         border-radius: 8px;
         font-weight: 700;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         border-left: 5px solid #3b82f6;
-        font-size: 24px; /* Ditambahkan untuk memperbesar subheader */
+    }
+
+    /* Styling Kotak Metrics (Kanan Pie) */
+    [data-testid="stMetricValue"] {
+        font-size: 24px !important;
+        font-weight: 800 !important;
+    }
+    
+    /* Membuat efek Card/Kotak pada elemen Metric */
+    div[data-testid="stMetric"] {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.02);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -140,35 +148,45 @@ try:
         if not df_unique.empty:
             st.markdown('<div class="section-title">📊 Analisis Performa</div>', unsafe_allow_html=True)
             
-            # --- ROW 1: PIE & METRICS ---
-            col_left, col_right = st.columns([1.5, 1])
+            # --- ROW 1: PIE & METRICS (PROPOSIONAL & CARDS) ---
+            col_left, col_right = st.columns([1.2, 1])
+            
             with col_left:
                 counts = df_unique['Final Grade'].value_counts().reset_index()
                 counts.columns = ['Grade', 'Jumlah']
                 total_op_pie = counts['Jumlah'].sum()
-                counts['Custom_Label'] = counts.apply(lambda x: f"Grade {x['Grade']} / {x['Jumlah']} / {(x['Jumlah']/total_op_pie*100):.1f}%", axis=1)
+                counts['Custom_Label'] = counts.apply(lambda x: f"Grade {x['Grade']}<br>{(x['Jumlah']/total_op_pie*100):.1f}%", axis=1)
                 
-                fig_pie = px.pie(counts, values='Jumlah', names='Grade', hole=0.5, 
+                fig_pie = px.pie(counts, values='Jumlah', names='Grade', hole=0.6, 
                                 color='Grade', color_discrete_map=color_map)
                 fig_pie.update_traces(
                     textinfo='text', 
                     text=counts['Custom_Label'], 
-                    textposition='auto',
-                    insidetextorientation='horizontal'
+                    textposition='outside',
+                    marker=dict(line=dict(color='#ffffff', width=2))
                 )
-                fig_pie.update_layout(showlegend=False, height=550, margin=dict(t=10, b=10, l=10, r=10))
+                fig_pie.update_layout(
+                    showlegend=False, 
+                    height=450, 
+                    margin=dict(t=30, b=30, l=10, r=10),
+                    annotations=[dict(text=f'Total<br>{total_op_pie}', x=0.5, y=0.5, font_size=22, showarrow=False)]
+                )
                 st.plotly_chart(fig_pie, use_container_width=True)
                 
             with col_right:
+                # Kotak Utama (Total)
                 st.metric("Total Operator", f"{len(df_unique)} Orang")
-                st.write("---")
+                st.markdown('<div style="margin-bottom: 20px;"></div>', unsafe_allow_html=True)
+                
+                # Grid Kotak 2x2 untuk Grade
                 m_col1, m_col2 = st.columns(2)
                 for i, g in enumerate(['A', 'B', 'C', 'D']):
                     count = df_unique[df_unique['Final Grade'] == g].shape[0]
                     target_col = m_col1 if i % 2 == 0 else m_col2
-                    target_col.metric(f"Grade {g}", f"{count} Org")
+                    with target_col:
+                        st.metric(f"Grade {g}", f"{count} Org")
 
-            # --- ROW 2: BAR CHART (BERSIH TOTAL) ---
+            # --- ROW 2: BAR CHART ---
             st.markdown("<br>", unsafe_allow_html=True)
             line_data = df_unique.groupby(['Line', 'Final Grade']).size().reset_index(name='Count')
             line_total = df_unique.groupby('Line').size().reset_index(name='Total')
@@ -184,15 +202,12 @@ try:
                             category_orders={"Line_Label": ["Line " + str(i) for i in lines_list]})
             
             fig_bar.update_traces(textposition='inside', textfont=dict(color="white", size=11))
-            
             fig_bar.update_layout(
-                showlegend=False,
-                height=500, 
+                showlegend=False, height=500, 
                 xaxis=dict(title=None, showticklabels=True, showgrid=False), 
                 yaxis=dict(visible=False, showgrid=False), 
                 margin=dict(t=10, b=10, l=10, r=10),
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)'
+                plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)'
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
