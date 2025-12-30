@@ -81,14 +81,22 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- INJECT HEADER ---
+# --- LOGO & HEADER LOGIC ---
+logo_url = "https://drive.google.com/file/d/1oS09AXFGtqWtB7b_llMa4uWFjoK8qwzG/view?usp=sharing"
+
+# Kita panggil fungsinya dulu agar variabel logo_data terisi
+logo_data = get_base64_logo(logo_url)
+
+# Cek apakah logo berhasil diambil, jika tidak beri string kosong agar tidak error
+logo_html = f'<img src="data:image/png;base64,{logo_data}" class="header-logo">' if logo_data else ""
+
+# Tampilkan Header (Hanya satu kali saja)
 st.markdown(f'''
     <div class="custom-header">
         <div class="title-text">Skill Matrix Dashboard</div>
-        <img src="data:image/png;base64,{logo_data}" class="header-logo">
+        {logo_html}
     </div>
     ''', unsafe_allow_html=True)
-
 # --- LOAD DATA ---
 @st.cache_data
 def load_data():
@@ -223,4 +231,5 @@ try:
         
 except Exception as e:
     st.error(f"Terjadi Kesalahan: {e}")
+
 
