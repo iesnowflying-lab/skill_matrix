@@ -28,24 +28,38 @@ def get_base64_logo(url):
     except Exception:
         return None
 
-# --- CSS CUSTOM (LOGO & TABEL) ---
+# --- CSS CUSTOM (SIMETRIS & OPTIMASI) ---
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
+    
+    /* Header Simetris */
     .custom-header {
         background-color: #cbd5e1; 
-        padding: 20px 40px;
+        padding: 10px 40px;
         border-radius: 15px;
         display: flex;
-        align-items: center;
+        align-items: center; /* Menjaga teks dan logo sejajar vertikal di tengah */
         justify-content: space-between;
         margin-bottom: 25px;
         border: 1px solid #94a3b8;
+        min-height: 120px; /* Mengunci tinggi agar proporsional */
     }
-    .title-text { color: #000000 !important; font-size: 32px; font-weight: 800; margin: 0; }
+    
+    .title-text { 
+        color: #000000 !important; 
+        font-size: 32px; 
+        font-weight: 800; 
+        margin: 0;
+        padding-left: 10px; /* Memberi sedikit nafas di sisi kiri */
+    }
     
     /* Logo Diperbesar */
-    .header-logo { height: 100px; width: auto; object-fit: contain; }
+    .header-logo { 
+        height: 100px; 
+        width: auto; 
+        object-fit: contain; 
+    }
     
     .section-title {
         background-color: #e2e8f0; 
@@ -56,12 +70,14 @@ st.markdown("""
         margin-bottom: 15px;
         border-left: 5px solid #3b82f6;
     }
+    
     div[data-testid="stMetric"] {
         background-color: #f8fafc !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 12px !important;
         padding: 15px !important;
     }
+    
     /* Tabel Rata Kiri */
     [data-testid="stDataFrame"] td { text-align: left !important; }
     </style>
@@ -86,7 +102,12 @@ def load_data():
 logo_url = "https://drive.google.com/file/d/1oS09AXFGtqWtB7b_llMa4uWFjoK8qwzG/view?usp=sharing"
 logo_data = get_base64_logo(logo_url)
 logo_html = f'<img src="data:image/png;base64,{logo_data}" class="header-logo">' if logo_data else ""
-st.markdown(f'<div class="custom-header"><h1 class="title-text">Skill Matrix Dashboard</h1>{logo_html}</div>', unsafe_allow_html=True)
+st.markdown(f'''
+    <div class="custom-header">
+        <h1 class="title-text">Skill Matrix Dashboard</h1>
+        {logo_html}
+    </div>
+    ''', unsafe_allow_html=True)
 
 try:
     df_display = load_data()
@@ -126,7 +147,6 @@ try:
                 counts = df_unique['Final Grade'].value_counts().reset_index()
                 counts.columns = ['Grade', 'Jumlah']
                 total_op_pie = counts['Jumlah'].sum()
-                # Label Gabungan: Grade / Jumlah / %
                 counts['Custom_Label'] = counts.apply(lambda x: f"Grade {x['Grade']} / {x['Jumlah']} / {(x['Jumlah']/total_op_pie*100):.1f}%", axis=1)
                 
                 fig_pie = px.pie(counts, values='Jumlah', names='Grade', hole=0.5, 
@@ -166,7 +186,6 @@ try:
             
             fig_bar.update_traces(textposition='inside', textfont=dict(color="white", size=11))
             
-            # Pengaturan layout untuk menghapus semua tulisan di samping dan bawah
             fig_bar.update_layout(
                 showlegend=False,
                 height=500, 
