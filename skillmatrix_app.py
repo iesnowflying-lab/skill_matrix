@@ -77,6 +77,7 @@ st.markdown("""
         font-weight: 700;
         margin-bottom: 15px;
         border-left: 5px solid #3b82f6;
+        font-size: 24px; /* Ditambahkan untuk memperbesar subheader */
     }
     </style>
     """, unsafe_allow_html=True)
