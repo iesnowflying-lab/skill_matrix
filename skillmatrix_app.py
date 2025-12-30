@@ -91,12 +91,7 @@ logo_data = get_base64_logo(logo_url)
 logo_html = f'<img src="data:image/png;base64,{logo_data}" class="header-logo">' if logo_data else ""
 
 # Tampilkan Header (Hanya satu kali saja)
-st.markdown(f'''
-    <div class="custom-header">
-        <div class="title-text">Skill Matrix Dashboard</div>
-        {logo_html}
-    </div>
-    ''', unsafe_allow_html=True)
+
 # --- LOAD DATA ---
 @st.cache_data
 def load_data():
@@ -231,5 +226,6 @@ try:
         
 except Exception as e:
     st.error(f"Terjadi Kesalahan: {e}")
+
 
 
