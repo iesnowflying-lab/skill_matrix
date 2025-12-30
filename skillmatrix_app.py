@@ -81,14 +81,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- INJECT HEADER ---
-st.markdown(f'''
-    <div class="custom-header">
-        <div class="title-text">Skill Matrix Dashboard</div>
-        <img src="data:image/png;base64,{logo_data}" class="header-logo">
-    </div>
-    ''', unsafe_allow_html=True)
-
 # --- LOAD DATA ---
 @st.cache_data
 def load_data():
@@ -223,5 +215,3 @@ try:
         
 except Exception as e:
     st.error(f"Terjadi Kesalahan: {e}")
-
-
